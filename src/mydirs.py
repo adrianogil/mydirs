@@ -4,7 +4,7 @@ import sys, sqlite3, os, commands
 list_args = '--save -s --open -o --remove -r --list -l'
 
 # Open Connection
-mydirs_directory = '/Users/gil/workspace/python/mydirs'
+mydirs_directory = '/Users/gil/workspace/python/mydirs/db/'
 conn = sqlite3.connect(mydirs_directory + 'mydirs.sqlite');
 
 # Creating cursor
