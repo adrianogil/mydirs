@@ -56,6 +56,18 @@ elif len(sys.argv) == 2:
 		print strList
 	elif (sys.argv[1] == '--list-args'):
 		print list_args
+	if (sys.argv[1] == '--clean' or sys.argv[1] == '-c'):
+		# List all saved path
+		c.execute("SELECT * from PathByKey ORDER BY path_key")
+		rows = c.fetchall()
+		for row in rows:
+			file_path = row[1]
+			print file_path
+			if not os.path.exists(file_path):
+				print "Removing " + str(row[2]) + ":" + str(row[1])
+				c.execute("DELETE FROM PathByKey WHERE path_key = ?", (row[2],))
+				conn.commit()
+
 
 # We can also close the cursor if we are done with it
 c.close()
