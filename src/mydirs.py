@@ -33,7 +33,10 @@ if len(sys.argv) == 3:
 		# Open saved path
 		c.execute("SELECT path FROM PathByKey WHERE path_key LIKE ?", (sys.argv[2],))
 		row = c.fetchone()
-		print row[0]
+		if row is None:
+			print '.'
+		else:
+			print row[0]
 		# print os.chdir(row[0])
 		# print commands.getoutput('cd ' + row[0])
 	elif (sys.argv[1] == "--remove" or sys.argv[1] == '-r'):
