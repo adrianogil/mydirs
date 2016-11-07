@@ -44,7 +44,7 @@ if len(sys.argv) == 3:
 elif len(sys.argv) == 2:
 	if (sys.argv[1] == '--list' or sys.argv[1] == '-l'):
 		# List all saved path
-		c.execute("SELECT * from PathByKey")
+		c.execute("SELECT * from PathByKey ORDER BY path_key")
 		for row in c:
 			print str(row[2]) + ":" + str(row[1])
 	elif (sys.argv[1] == '--auto-list'):
