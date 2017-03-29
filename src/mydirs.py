@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import sys, sqlite3, os, commands
 
-list_args = '--save -s --open -o --remove -r --list -l'
+list_args = '--save -s --open -o --remove -r --list -l -u --update'
 
 # Open Connection
-mydirs_directory = '/Users/gil/workspace/python/mydirs/db/'
+mydirs_directory = '/Users/SIDIA/workspace/python/mydirs/db/'
 conn = sqlite3.connect(mydirs_directory + 'mydirs.sqlite');
 
 # Creating cursor
@@ -44,6 +44,18 @@ if len(sys.argv) == 3:
 		print 'deleting', sys.argv[2]
 		c.execute("DELETE FROM PathByKey WHERE path_key = ?", (sys.argv[2],))
 		conn.commit()
+	elif (sys.argv[1] == "--update" or sys.argv[1] == '-u'):
+		# Remove a saved path
+		print 'Updating', sys.argv[2], 'to current path'
+		c.execute("DELETE FROM PathByKey WHERE path_key = ?", (sys.argv[2],))
+		conn.commit()
+		# Save current path
+		#print "Saving Current Path " + os.getcwd() + " string " + sys.argv[2]
+		dict_path = {":path" : os.getcwd(), ":key": sys.argv[2]}
+		#print dict_path
+		c.execute("INSERT INTO PathByKey (path,path_key) VALUES (:path,:key)", (os.getcwd(), sys.argv[2]))
+		conn.commit()
+		print '.'
 elif len(sys.argv) == 2:
 	if (sys.argv[1] == '--list' or sys.argv[1] == '-l'):
 		# List all saved path
