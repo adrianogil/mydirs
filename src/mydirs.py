@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys, sqlite3, os, commands
 
-list_args = '--save -s --open -o --remove -r --list -l -u --update'
+list_args = '--save -s --open -o --remove -r --list -l -u --update -f --find'
 
 # Open Connection
 mydirs_directory = '/Users/SIDIA/workspace/python/mydirs/db/'
@@ -56,6 +56,11 @@ if len(sys.argv) == 3:
 		c.execute("INSERT INTO PathByKey (path,path_key) VALUES (:path,:key)", (os.getcwd(), sys.argv[2]))
 		conn.commit()
 		print '.'
+	elif (sys.argv[1] == "--find" or sys.argv[1] == '-f'):
+		print 'Searching for', sys.argv[2], 'in bookmarked directories\n'
+		c.execute("SELECT * FROM PathByKey WHERE path_key LIKE ?", ("%" + sys.argv[2] + "%",))
+		for row in c:
+			print str(row[2]) + ":" + str(row[1])
 elif len(sys.argv) == 2:
 	if (sys.argv[1] == '--list' or sys.argv[1] == '-l'):
 		# List all saved path
