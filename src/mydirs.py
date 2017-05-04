@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 import sys, sqlite3, os, commands
 
+import os
+print 
+
 list_args = '--save -s --open -o --remove -r --list -l -u --update -f --find'
 
 # Open Connection
-mydirs_directory = '/Users/SIDIA/workspace/python/mydirs/db/'
+mydirs_directory = os.environ['HOME'] + '/workspace/python/mydirs/db/'
 conn = sqlite3.connect(mydirs_directory + 'mydirs.sqlite');
 
 # Creating cursor
