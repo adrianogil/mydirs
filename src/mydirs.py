@@ -2,7 +2,6 @@
 import sys, sqlite3, os, commands
 
 import os
-print 
 
 list_args = '--save -s --open -o --remove -r --list -l -u --update -f --find'
 
