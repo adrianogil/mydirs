@@ -32,6 +32,14 @@ if len(sys.argv) == 3:
 		c.execute("INSERT INTO PathByKey (path,path_key) VALUES (:path,:key)", (os.getcwd(), sys.argv[2]))
 		conn.commit()
 		print '.'
+	elif (sys.argv[1] == '--path' or sys.argv[1] == '-p'):
+		# Return saved path
+		c.execute("SELECT path FROM PathByKey WHERE path_key LIKE ?", (sys.argv[2],))
+		row = c.fetchone()
+		if row is None:
+			print '.'
+		else:
+			print row[0]
 	elif (sys.argv[1] == '--open' or sys.argv[1] == '-o'):
 		# Open saved path
 		c.execute("SELECT path FROM PathByKey WHERE path_key LIKE ?", (sys.argv[2],))
