@@ -1,6 +1,8 @@
 
 if [ $1 == "-o" ] || [ $1 == "--open" ]; then
-    cd "$(python ~/workspace/python/mydirs/src/mydirs.py $1 $2)"
+    cd_directory="$(python $MYDIRS_DIRECTORY/mydirs.py $1 $2)"
+    echo "Let's go to directory "$cd_directory
+    cd "$cd_directory"
 else
     python ~/workspace/python/mydirs/src/mydirs.py $1 $2
 fi
