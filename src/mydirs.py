@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-import sys, sqlite3, os, commands
+import sys, sqlite3, os
 
-import os
-
-list_args = '--save -s --open -o --remove -r --list -l -u --update -f --find'
+list_args = '--save -s --open -o --remove -r --list -l -u --update -f --find -q --current'
 
 # Open Connection
 mydirs_directory = os.environ['HOME'] + '/workspace/python/mydirs/db/'
@@ -26,7 +24,7 @@ if len(sys.argv) == 3:
 	if (sys.argv[1] == '--save' or sys.argv[1] == '-s'):
 		# Save current path
 		#print "Saving Current Path " + os.getcwd() + " string " + sys.argv[2]
-		dict_path = {":path" : os.getcwd(), ":key": sys.argv[2]}
+		# dict_path = {":path" : os.getcwd(), ":key": sys.argv[2]}
 		#print dict_path
 		c.execute("INSERT INTO PathByKey (path,path_key) VALUES (:path,:key)", (os.getcwd(), sys.argv[2]))
 		conn.commit()
@@ -72,7 +70,14 @@ if len(sys.argv) == 3:
 		for row in c:
 			print str(row[2]) + ":" + str(row[1])
 elif len(sys.argv) == 2:
-	if (sys.argv[1] == '--list' or sys.argv[1] == '-l'):
+	if (sys.argv[1] == '--current' or sys.argv[1] == '-q'):
+		c.execute("SELECT path_key FROM PathByKey WHERE path LIKE ?", (os.getcwd(),))
+		row = c.fetchone()
+		if row is None:
+			print("Current directory wasn't saved")
+		else:
+			print('Current directory was saved as "' + str(row[0]) + '"')
+	elif (sys.argv[1] == '--list' or sys.argv[1] == '-l'):
 		# List all saved path
 		c.execute("SELECT * from PathByKey ORDER BY path_key")
 		for row in c:
