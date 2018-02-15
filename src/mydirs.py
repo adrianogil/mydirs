@@ -20,6 +20,9 @@ c.execute('''
 	)
 ''')
 
+
+
+
 if len(sys.argv) == 3:
 	if (sys.argv[1] == '--save' or sys.argv[1] == '-s'):
 		# Save current path
@@ -70,6 +73,13 @@ if len(sys.argv) == 3:
 		for row in c:
 			print str(row[2]) + ":" + str(row[1])
 elif len(sys.argv) == 2:
+	if (sys.argv[1] == '--save' or sys.argv[1] == '-s'):
+		# Save current path using current folder as key
+		current_dir = os.getcwd()
+		c.execute("INSERT INTO PathByKey (path,path_key) VALUES (:path,:key)", \
+			(current_dir, os.path.basename(current_dir).lower()))
+		conn.commit()
+		print '.'
 	if (sys.argv[1] == '--current' or sys.argv[1] == '-q'):
 		c.execute("SELECT path_key FROM PathByKey WHERE path LIKE ?", (os.getcwd(),))
 		row = c.fetchone()
