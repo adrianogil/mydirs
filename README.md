@@ -20,3 +20,13 @@ Open directory from <directory-alias>
 ```
 mydirs -o <directory-alias>
 ```
+
+Show if current directory is already saved
+```
+mydirs -q
+```
+
+Print the path saved using <directory-alias>
+```
+mydirs -p <directory-alias>
+```
