@@ -21,6 +21,11 @@ Open directory from <directory-alias>
 mydirs -o <directory-alias>
 ```
 
+Remove direction with alias <directory-alias>
+```
+mydirs -d <directory-alias>
+```
+
 Show if current directory is already saved
 ```
 mydirs -q
