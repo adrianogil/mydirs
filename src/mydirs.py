@@ -81,12 +81,16 @@ elif len(sys.argv) == 2:
 		conn.commit()
 		print '.'
 	if (sys.argv[1] == '--current' or sys.argv[1] == '-q'):
-		c.execute("SELECT path_key FROM PathByKey WHERE path LIKE ?", (os.getcwd(),))
-		row = c.fetchone()
-		if row is None:
+		c.execute("SELECT path_key FROM PathByKey WHERE path LIKE ?", (os.getcwd() + "%",))
+		results = c.fetchall()
+		if len(results) <= 0 :
 			print("Current directory wasn't saved")
 		else:
-			print('Current directory was saved as "' + str(row[0]) + '"')
+			if len(results) > 1:
+				print("Found %d directories" % (len(results),))
+			for row in results:
+				print('Current directory was saved as "' + str(row[0]) + '"')
+		
 	elif (sys.argv[1] == '--list' or sys.argv[1] == '-l'):
 		# List all saved path
 		c.execute("SELECT * from PathByKey ORDER BY path_key")
