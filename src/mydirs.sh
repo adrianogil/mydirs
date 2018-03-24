@@ -4,5 +4,5 @@ if [ $1 == "-o" ] || [ $1 == "--open" ]; then
     echo "Let's go to directory "$cd_directory
     cd "$cd_directory"
 else
-    python ~/workspace/python/mydirs/src/mydirs.py $1 $2
+    python $MYDIRS_DIRECTORY//mydirs.py $1 $2
 fi

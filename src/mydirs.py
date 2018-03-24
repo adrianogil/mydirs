@@ -4,7 +4,7 @@ import sys, sqlite3, os
 list_args = '--save -s --open -o --remove -r --list -l -u --update -f --find -q --current'
 
 # Open Connection
-mydirs_directory = os.environ['HOME'] + '/workspace/python/mydirs/db/'
+mydirs_directory = os.environ['MYDIRS_DIRECTORY'] + '../db/'
 conn = sqlite3.connect(mydirs_directory + 'mydirs.sqlite');
 
 # Creating cursor
