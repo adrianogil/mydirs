@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import sys, sqlite3, os
 
 list_args = '--save -s --open -o --remove -r --list -l -u --update -f --find -q --current'
