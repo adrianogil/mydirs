@@ -49,3 +49,7 @@ Feel free to submit PRs. I will do my best to review and merge them if I conside
 ## Development status
 
 This is a very alpha software. The code was written with no consideration of coding standards and architecture. A refactoring would do it good...
+
+## See also
+
+- https://github.com/huyng/bashmarks
