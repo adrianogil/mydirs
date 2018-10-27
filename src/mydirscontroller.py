@@ -129,6 +129,22 @@ class MyDirsController:
                 self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (row[2],))
                 self.conn.commit()
 
+    def show_history(self, args, extra_args):
+
+        if len(args) == 0:
+            get_path_history_cmd = 'cat "' + self.history_file + '" | tail -r'
+            path_history = subprocess.check_output(get_path_history_cmd, shell=True)
+            path_history = path_history.strip()
+
+            print(path_history)
+        elif len(args) == 1:
+            get_path_history_cmd = 'cat "' + self.history_file + '" | tail -' + \
+                str(args[0]) + ' | tail -r'
+            path_history = subprocess.check_output(get_path_history_cmd, shell=True)
+            path_history = path_history.strip()
+
+            print(path_history)
+
     def go_back(self, args, extra_args):
         
         total_path_cmd = 'cat "' + self.history_file + '" | wc -l'
@@ -199,6 +215,7 @@ class MyDirsController:
             '-f'           : self.find,
             '-q'           : self.current,
             '-bk'          : self.go_back,
+            '-bh'          : self.show_history,
             '--back'       : self.go_back,
             '--clean'      : self.clean,
             '--save'       : self.save,
@@ -209,6 +226,7 @@ class MyDirsController:
             '--remove'     : self.remove,
             '--update'     : self.update,
             '--current'    : self.current,
+            '--history'    : self.show_history,
             '--list-args'  : self.list_args,
             '--auto-list'  : self.auto_list,
             # 'no-args'      : self.handle_no_args,
