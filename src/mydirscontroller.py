@@ -99,7 +99,7 @@ class MyDirsController:
     def find(self, args, extra_args):
         target_path_key = args[0]
 
-        print 'Searching for', target_path_key, 'in bookmarked directories\n'
+        print('Searching for', target_path_key, 'in bookmarked directories\n')
         self.c.execute("SELECT * FROM PathByKey WHERE path_key LIKE ?", ("%" + target_path_key + "%",))
         for row in self.c:
             print(str(row[2]) + ":" + str(row[1]))
