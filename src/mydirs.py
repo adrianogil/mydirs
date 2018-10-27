@@ -4,6 +4,11 @@ import sys, os
 from mydirscontroller import MyDirsController
 import utils
 
+try:
+    range = xrange
+except NameError:
+    pass
+
 # Define database directory
 db_directory = os.environ['MYDIRS_DIRECTORY'] + '../db/mydirs.sqlite'
 
