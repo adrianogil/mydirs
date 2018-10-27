@@ -38,7 +38,7 @@ class MyDirsController:
         save_data = (current_dir, path_key)
         self.c.execute(save_sql, save_data)
         self.conn.commit()
-        print '.'
+        print('.')
 
     def update(self, args, extra_args):
         
@@ -46,13 +46,13 @@ class MyDirsController:
         path_key = args[0]
 
         # Remove a saved path
-        print 'Updating', path_key, 'to current path'
+        print('Updating', path_key, 'to current path')
         self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (path_key,))
         self.conn.commit()
         
         self.c.execute("INSERT INTO PathByKey (path,path_key) VALUES (:path,:key)", (current_dir, path_key))
         self.conn.commit()
-        print '.'
+        print('.')
 
     def remove(self, args, extra_args):
         current_dir = os.getcwd()
@@ -62,7 +62,7 @@ class MyDirsController:
         else:
             path_key = args[0]
     
-        print 'deleting', path_key
+        print('deleting', path_key)
         self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (path_key,))
         self.conn.commit()
 
@@ -74,15 +74,15 @@ class MyDirsController:
         self.c.execute("SELECT path FROM PathByKey WHERE path_key LIKE ?", (path_key,))
         row = self.c.fetchone()
         if row is None:
-            print '.'
+            print('.')
         else:
-            print row[0]
+            print(row[0])
 
     def list(self, args, extra_args):
         # List all saved path
         self.c.execute("SELECT * from PathByKey ORDER BY path_key")
         for row in self.c:
-            print str(row[2]) + ":" + str(row[1])
+            print(str(row[2]) + ":" + str(row[1]))
 
     def path(self, args, extra_args):
 
@@ -92,9 +92,9 @@ class MyDirsController:
         self.c.execute("SELECT path FROM PathByKey WHERE path_key LIKE ?", (path_key,))
         row = self.c.fetchone()
         if row is None:
-            print '.'
+            print('.')
         else:
-            print row[0]
+            print(row[0])
 
     def find(self, args, extra_args):
         target_path_key = args[0]
@@ -102,7 +102,7 @@ class MyDirsController:
         print 'Searching for', target_path_key, 'in bookmarked directories\n'
         self.c.execute("SELECT * FROM PathByKey WHERE path_key LIKE ?", ("%" + target_path_key + "%",))
         for row in self.c:
-            print str(row[2]) + ":" + str(row[1])
+            print(str(row[2]) + ":" + str(row[1]))
 
     def clean(self, args, extra_args):
         # List all saved path
@@ -112,7 +112,7 @@ class MyDirsController:
             file_path = row[1]
             # print file_path
             if not os.path.exists(file_path):
-                print "Removing " + str(row[2]) + ":" + str(row[1])
+                print("Removing " + str(row[2]) + ":" + str(row[1]))
                 self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (row[2],))
                 self.conn.commit()
 
@@ -140,7 +140,7 @@ class MyDirsController:
         strList = ''
         for row in self.c:
             strList = strList + ' ' +  str(row[2])
-        print strList
+        print(strList)
 
 
     def get_commands(self):
