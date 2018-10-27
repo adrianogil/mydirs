@@ -25,7 +25,7 @@ def parse_arguments():
         controller.handle_no_args()
         return None
 
-    for i in xrange(1, len(sys.argv)):
+    for i in range(1, len(sys.argv)):
         a = sys.argv[i]
         if a[0] == '-' and not utils.is_float(a):
             last_key = a
