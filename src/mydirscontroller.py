@@ -132,18 +132,24 @@ class MyDirsController:
     def show_history(self, args, extra_args):
 
         if len(args) == 0:
-            get_path_history_cmd = 'cat "' + self.history_file + '" | tail -r'
+            get_path_history_cmd = 'cat "' + self.history_file + '"'
             path_history = subprocess.check_output(get_path_history_cmd, shell=True)
             path_history = path_history.strip()
 
-            print(path_history)
+            path_list = path_history.split('\n')
+
+            for i in reversed(path_list):
+                print(i)
         elif len(args) == 1:
             get_path_history_cmd = 'cat "' + self.history_file + '" | tail -' + \
-                str(args[0]) + ' | tail -r'
+                str(args[0]) + ''
             path_history = subprocess.check_output(get_path_history_cmd, shell=True)
             path_history = path_history.strip()
 
-            print(path_history)
+            path_list = path_history.split('\n')
+
+            for i in reversed(path_list):
+                print(i)
 
     def go_back(self, args, extra_args):
         
