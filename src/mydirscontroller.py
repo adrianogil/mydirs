@@ -1,10 +1,17 @@
 
-import sqlite3, os
+import sqlite3, os, subprocess
 
 class MyDirsController:
-    def __init__(self, db_directory):
-        list_args = '--save -s --open -o --remove -r --list -l -u --update -f --find -q --current'
-        self.conn = sqlite3.connect(db_directory);
+    def __init__(self):
+        self.src_path = os.environ['MYDIRS_DIRECTORY']
+
+        # Define database directory
+        self.db_directory = self.src_path + '../db/'
+        self.db_file = self.db_directory + 'mydirs.sqlite'
+
+        self.history_file = self.db_directory + 'mydirs.history'
+
+        self.conn = sqlite3.connect(self.db_file);
         # Creating cursor
         self.c = self.conn.cursor()
         # Create table
@@ -38,6 +45,7 @@ class MyDirsController:
         save_data = (current_dir, path_key)
         self.c.execute(save_sql, save_data)
         self.conn.commit()
+
         print('.')
 
     def update(self, args, extra_args):
@@ -76,7 +84,12 @@ class MyDirsController:
         if row is None:
             print('.')
         else:
-            print(row[0])
+            current_dir = row[0]
+            print(current_dir)
+
+            # Save path in history file
+            save_path_cmd = 'echo "' + current_dir + '" >> "' + self.history_file + '"'
+            subprocess.check_output(save_path_cmd, shell=True)
 
     def list(self, args, extra_args):
         # List all saved path
@@ -116,6 +129,37 @@ class MyDirsController:
                 self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (row[2],))
                 self.conn.commit()
 
+    def go_back(self, args, extra_args):
+        
+        total_path_cmd = 'cat "' + self.history_file + '" | wc -l'
+        total_path = subprocess.check_output(total_path_cmd, shell=True)
+
+        total_path = int(total_path.strip())
+
+        # print(str(total_path))
+
+        # Get last path in history file
+        get_last_path_cmd = 'cat "' + self.history_file + '" | tail -1'
+        last_path = subprocess.check_output(get_last_path_cmd, shell=True)
+        last_path = last_path.strip()
+
+        # print(last_path)
+
+        if total_path > 0:
+            update_path_cmd = 'cat "' + self.history_file + '" | head -' + str(total_path-1) + \
+                ' > tmp.history'
+            subprocess.check_output(update_path_cmd, shell=True)
+
+            update_path_cmd = 'cat tmp.history > "' + self.history_file + '" && rm tmp.history'
+            subprocess.check_output(update_path_cmd, shell=True)
+        
+            current_dir = os.getcwd()
+
+            if current_dir.strip() == last_path:
+                self.go_back(args, extra_args)
+            else:
+                print(last_path)
+
     def current(self, args, extra_args):
         self.c.execute("SELECT path_key FROM PathByKey WHERE path LIKE ?", (os.getcwd() + "%",))
         results = self.c.fetchall()
@@ -154,6 +198,8 @@ class MyDirsController:
             '-c'           : self.clean,
             '-f'           : self.find,
             '-q'           : self.current,
+            '-bk'          : self.go_back,
+            '--back'       : self.go_back,
             '--clean'      : self.clean,
             '--save'       : self.save,
             '--open'       : self.open,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-import sys, os
+import sys
 
 from mydirscontroller import MyDirsController
 import utils
@@ -9,10 +9,7 @@ try:
 except NameError:
     pass
 
-# Define database directory
-db_directory = os.environ['MYDIRS_DIRECTORY'] + '../db/mydirs.sqlite'
-
-controller = MyDirsController(db_directory)
+controller = MyDirsController()
 commands_parse = controller.get_commands()
 
 def parse_arguments():
