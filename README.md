@@ -36,11 +36,18 @@ Print the path saved using <directory-alias>
 mydirs -p <directory-alias>
 ```
 
+Show history of last mydirs directory changes
+```
+mydirs -bh <number>
+```
+
+Go back to last mydirs directory
+```
+mydirs -b
+```
+
 ## Planned features
-- history of last mydirs directory changes
-```
-mydirs -h <number>
-```
+
 
 ## Contributing
 
