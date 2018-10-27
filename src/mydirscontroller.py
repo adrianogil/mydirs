@@ -74,6 +74,29 @@ class MyDirsController:
         self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (path_key,))
         self.conn.commit()
 
+    def save_history(self, path_to_save):
+        total_path_cmd = 'cat "' + self.history_file + '" | wc -l'
+        total_path = subprocess.check_output(total_path_cmd, shell=True)
+
+        total_path = int(total_path.strip())
+
+        # print(str(total_path))
+
+        if total_path > 0:
+            # Get last path in history file
+            get_last_path_cmd = 'cat "' + self.history_file + '" | tail -1'
+            last_path = subprocess.check_output(get_last_path_cmd, shell=True)
+            last_path = last_path.strip()
+
+            if last_path != path_to_save:
+                # Save path in history file
+                save_path_cmd = 'echo "' + path_to_save + '" >> "' + self.history_file + '"'
+                subprocess.check_output(save_path_cmd, shell=True)
+        else:
+            # Save path in history file
+            save_path_cmd = 'echo "' + path_to_save + '" >> "' + self.history_file + '"'
+            subprocess.check_output(save_path_cmd, shell=True)
+
     def open(self, args, extra_args):
 
         path_key = args[0]
@@ -84,12 +107,12 @@ class MyDirsController:
         if row is None:
             print('.')
         else:
-            current_dir = row[0]
-            print(current_dir)
+            next_dir = row[0]
+            print(next_dir)
 
-            # Save path in history file
-            save_path_cmd = 'echo "' + current_dir + '" >> "' + self.history_file + '"'
-            subprocess.check_output(save_path_cmd, shell=True)
+            self.save_history(os.getcwd())
+            self.save_history(next_dir)
+            
 
     def list(self, args, extra_args):
         # List all saved path
