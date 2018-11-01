@@ -1,6 +1,8 @@
 alias mydirs=". "$MYDIRS_DIRECTORY"/mydirs.sh"
 source $MYDIRS_DIRECTORY"/autocompletion_mydirs.sh"
 
+alias my="mydirs -o"
+
 function mydirs-rnd()
 {
     if [[ $0 == *termux* ]]; then
