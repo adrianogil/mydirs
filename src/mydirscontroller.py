@@ -1,5 +1,8 @@
 
 import sqlite3, os, subprocess
+import os.path
+
+import json
 
 class MyDirsController:
     def __init__(self):
@@ -8,6 +11,7 @@ class MyDirsController:
         # Define database directory
         self.db_directory = self.src_path + '../db/'
         self.db_file = self.db_directory + 'mydirs.sqlite'
+        self.json_stats_filepath = self.db_directory + 'mydirs_stats.json'
 
         self.history_file = self.db_directory + 'mydirs.history'
 
@@ -36,7 +40,7 @@ class MyDirsController:
             path_key = os.path.basename(current_dir).lower()
         else:
             path_key = args[0]
-    
+
         # Save current path
         #print "Saving Current Path " + os.getcwd() + " string " + sys.argv[2]
         # dict_path = {":path" : os.getcwd(), ":key": sys.argv[2]}
@@ -49,7 +53,7 @@ class MyDirsController:
         print('.')
 
     def update(self, args, extra_args):
-        
+
         current_dir = os.getcwd()
         path_key = args[0]
 
@@ -57,7 +61,7 @@ class MyDirsController:
         print('Updating', path_key, 'to current path')
         self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (path_key,))
         self.conn.commit()
-        
+
         self.c.execute("INSERT INTO PathByKey (path,path_key) VALUES (:path,:key)", (current_dir, path_key))
         self.conn.commit()
         print('.')
@@ -69,7 +73,7 @@ class MyDirsController:
             path_key = os.path.basename(current_dir).lower()
         else:
             path_key = args[0]
-    
+
         print('deleting', path_key)
         self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (path_key,))
         self.conn.commit()
@@ -112,7 +116,7 @@ class MyDirsController:
 
             self.save_history(os.getcwd())
             self.save_history(next_dir)
-            
+            self.save_stats(next_dir)
 
     def list(self, args, extra_args):
         # List all saved path
@@ -152,6 +156,34 @@ class MyDirsController:
                 self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (row[2],))
                 self.conn.commit()
 
+    def save_stats(self, path):
+        if os.path.isfile(self.json_stats_filepath):
+            with open(self.json_stats_filepath, 'r') as f:
+                stats = json.load(f)
+            if path in stats:
+                stats[path] = stats[path] + 1
+            else:
+                stats[path] = 1
+        else:
+            stats = {}
+            stats[path] = 1
+        # Writing JSON data
+        with open(self.json_stats_filepath, 'w') as f:
+            json.dump(stats, f)
+
+    def show_stats(self, args, extra_args):
+        if os.path.isfile(self.json_stats_filepath):
+            with open(self.json_stats_filepath, 'r') as f:
+                stats = json.load(f)
+            paths = []
+            for s in stats:
+                paths.append(s)
+
+            paths = sorted(paths, key=lambda x: stats[x], reverse=True)
+
+            for s in paths:
+                print("%s: %s" % (s, stats[s]))
+
     def show_history(self, args, extra_args):
 
         if len(args) == 0:
@@ -175,7 +207,7 @@ class MyDirsController:
                 print(i)
 
     def go_back(self, args, extra_args):
-        
+
         total_path_cmd = 'cat "' + self.history_file + '" | wc -l'
         total_path = subprocess.check_output(total_path_cmd, shell=True)
 
@@ -197,7 +229,7 @@ class MyDirsController:
 
             update_path_cmd = 'cat tmp.history > "' + self.history_file + '" && rm tmp.history'
             subprocess.check_output(update_path_cmd, shell=True)
-        
+
             current_dir = os.getcwd()
 
             if current_dir.strip() == last_path:
@@ -245,6 +277,7 @@ class MyDirsController:
             '-q'           : self.current,
             '-bk'          : self.go_back,
             '-bh'          : self.show_history,
+            '--stats'      : self.show_stats,
             '--back'       : self.go_back,
             '--clean'      : self.clean,
             '--save'       : self.save,
