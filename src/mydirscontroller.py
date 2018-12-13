@@ -8,8 +8,12 @@ class MyDirsController:
     def __init__(self):
         self.src_path = os.environ['MYDIRS_DIRECTORY']
 
+        # print("Loading src path " + self.src_path)
+
         # Define database directory
-        self.db_directory = self.src_path + '../db/'
+        self.db_directory = self.src_path + '/../db/'
+
+        # print("Loading db " + self.db_directory)
         self.db_file = self.db_directory + 'mydirs.sqlite'
         self.json_stats_filepath = self.db_directory + 'mydirs_stats.json'
 
