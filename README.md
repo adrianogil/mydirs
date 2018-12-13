@@ -2,10 +2,11 @@
 Command line tool to bookmark directories.
 
 # How to Install
-You only need to run
+Just create a macro 'MYDIRS_DIRECTORY' with the path of this project.
 
+You can also use [gil-install][https://github.com/adrianogil/gil-tools/blob/master/src/python/gil_install.py]:
 ```
-./install.sh
+gil-install -i
 ```
 
 # Command line options
