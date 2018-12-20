@@ -242,15 +242,30 @@ class MyDirsController:
                 print(last_path)
 
     def current(self, args, extra_args):
-        self.c.execute("SELECT path_key FROM PathByKey WHERE path LIKE ?", (os.getcwd() + "%",))
-        results = self.c.fetchall()
-        if len(results) <= 0 :
+        current_path = os.getcwd()
+        found = False
+        attempts = 0
+
+        while current_path != "" and found is False:
+            self.c.execute("SELECT path_key, path  FROM PathByKey WHERE path LIKE ?", (current_path + "%",))
+            results = self.c.fetchall()
+            if len(results) <= 0:
+                found = False
+
+                current_folder = os.path.basename(current_path)
+                # print(current_folder)
+                current_path = current_path[:-(len(current_folder) + 1)]
+                # print("Testing path: " + current_path)
+                attempts += 1
+            else:
+                if len(results) > 1:
+                    print("Found %d directories" % (len(results),))
+                for row in results:
+                    print('"' + row[1] + '" was saved as "' + str(row[0]) + '"')
+                found = True
+
+        if found is False:
             print("Current directory wasn't saved")
-        else:
-            if len(results) > 1:
-                print("Found %d directories" % (len(results),))
-            for row in results:
-                print('Current directory was saved as "' + str(row[0]) + '"')
 
     def list_args(self, args, extra_args):
         mydirs_args = ''
