@@ -242,7 +242,11 @@ class MyDirsController:
                 print(last_path)
 
     def current(self, args, extra_args):
-        current_path = os.getcwd()
+
+        if len(args) == 1:
+            current_path = args[0]
+        elif len(args) == 0:
+            current_path = os.getcwd()
         found = False
         attempts = 0
 
