@@ -1,7 +1,15 @@
 alias mydirs=". "$MYDIRS_DIRECTORY"/mydirs.sh"
 source $MYDIRS_DIRECTORY"/autocompletion_mydirs.sh"
 
-alias my="mydirs -o"
+function my()
+{
+    if [ -z "$1" ]
+    then
+        mydirs -s
+    else
+        mydirs -o $1
+    fi
+)
 
 function mydirs-rnd()
 {
