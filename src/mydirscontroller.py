@@ -45,16 +45,20 @@ class MyDirsController:
         else:
             path_key = args[0]
 
-        # Save current path
-        #print "Saving Current Path " + os.getcwd() + " string " + sys.argv[2]
-        # dict_path = {":path" : os.getcwd(), ":key": sys.argv[2]}
-        #print dict_path
-        save_sql = "INSERT INTO PathByKey (path,path_key) VALUES (:path,:key)"
-        save_data = (current_dir, path_key)
-        self.c.execute(save_sql, save_data)
-        self.conn.commit()
+        self.c.execute("SELECT path FROM PathByKey WHERE path_key LIKE ?", (path_key,))
+        row = self.c.fetchone()
+        if row is None:
+            # Save current path
+            #print "Saving Current Path " + os.getcwd() + " string " + sys.argv[2]
+            # dict_path = {":path" : os.getcwd(), ":key": sys.argv[2]}
+            #print dict_path
+            save_sql = "INSERT INTO PathByKey (path,path_key) VALUES (:path,:key)"
+            save_data = (current_dir, path_key)
+            self.c.execute(save_sql, save_data)
+            self.conn.commit()
+        else:
+            print("key '%s' already exists" % (path_key))
 
-        print('.')
 
     def update(self, args, extra_args):
 
