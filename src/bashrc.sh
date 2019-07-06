@@ -26,3 +26,18 @@ function mytmux()
     tmux new -s $dir_alias -c $dir_path
 }
 complete -F _my mytmux
+
+function mydirs-sk()
+{
+    mydirs_option=$(mydirs --list-args | tr ' ' '\n' | sk)
+    echo $mydirs_option
+
+    if [[ "${mydirs_option}" == "--open" || "${mydirs_option}" == "-o" || "${prev}" == "--remove" || "${prev}" == "-r" ]] ; then
+        mydirs_args=$(mydirs -l | tr ':' ' ' | awk '{print $1}' | sk)
+
+        mydirs ${mydirs_option} ${mydirs_args}
+    else
+        mydirs ${mydirs_option}
+    fi
+}
+alias m="mydirs-sk"
