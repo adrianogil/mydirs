@@ -16,7 +16,7 @@ function mydirs-rnd()
         mydirs -o $(mydirs -l | shuf -n1 | sed 's/:/ /g' | awk '{print $1}')
     else
         mydirs -o $(mydirs -l | gshuf -n1 | sed 's/:/ /g' | awk '{print $1}')
-    fi    
+    fi
 }
 
 function mytmux()
@@ -41,3 +41,10 @@ function mydirs-sk()
     fi
 }
 alias m="mydirs-sk"
+
+function mydirs-open-sk()
+{
+    mydirs_args=$(mydirs -l | tr ':' '\t' | sk | tr '\t' ' ' | awk '{print $1}')
+    mydirs -o ${mydirs_args}
+}
+alias mk="mydirs-open-sk"
