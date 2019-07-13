@@ -6,12 +6,17 @@ import json
 
 class MyDirsController:
     def __init__(self):
+
         self.src_path = os.environ['MYDIRS_DIRECTORY']
 
-        # print("Loading src path " + self.src_path)
-
         # Define database directory
-        self.db_directory = self.src_path + '/../db/'
+        if 'MYDIRS_DB' in os.environ:
+            self.db_directory = os.environ['MYDIRS_DB']
+        else:
+            self.db_directory = self.src_path + '/../db/'
+
+        if not os.path.exists(self.db_directory):
+            os.makedirs(self.db_directory)
 
         # print("Loading db " + self.db_directory)
         self.db_file = self.db_directory + 'mydirs.sqlite'
