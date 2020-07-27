@@ -1,11 +1,17 @@
+from dao.mydirsdao import MyDirsDao
 
-import sqlite3, os, subprocess
+import subprocess
+import sqlite3
+import os
 import os.path
 
 import json
 
+
 class MyDirsController:
     def __init__(self):
+
+        self.dao = MyDirsDao()
 
         self.src_path = os.environ['MYDIRS_DIRECTORY']
 
@@ -294,7 +300,6 @@ class MyDirsController:
         for row in self.c:
             strList = strList + ' ' +  str(row[2])
         print(strList)
-
 
     def get_commands(self):
         commands_parse = {
