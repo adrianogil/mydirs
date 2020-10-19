@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import sys
 
-from mydirscontroller import MyDirsController
-import utils
+from mydirs.mydirscontroller import MyDirsController
+import mydirs.utils as utils
 
 try:
     range = xrange

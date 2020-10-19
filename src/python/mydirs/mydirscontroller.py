@@ -1,4 +1,4 @@
-from dao.mydirsdao import MyDirsDao
+from mydirs.dao.mydirsdao import MyDirsDao
 
 import subprocess
 import sqlite3
