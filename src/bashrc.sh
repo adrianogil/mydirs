@@ -9,7 +9,10 @@ then
 fi
 
 alias mydirs=". "$MYDIRS_DIRECTORY"/mydirs.sh"
-source $MYDIRS_DIRECTORY"/autocompletion_mydirs.sh"
+if [ -x "$BASH" ] && shopt -q >/dev/null 2>&1; then
+   source $MYDIRS_DIRECTORY"/autocompletion_mydirs.sh"
+fi
+
 
 function my()
 {
@@ -35,15 +38,9 @@ function mytmux()
     dir_path=$(mydirs -p $dir_alias)
     tmux new -s $dir_alias -c $dir_path
 }
-case $SHELL in
-*/zsh)
-   # assume Zsh
-   ;;
-*/bash)
-   # assume Bash
+if [ -x "$BASH" ] && shopt -q >/dev/null 2>&1; then
    complete -F _my mytmux
-   ;;
-*)
+fi
 
 
 function mydirs-sk()
