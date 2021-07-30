@@ -35,7 +35,16 @@ function mytmux()
     dir_path=$(mydirs -p $dir_alias)
     tmux new -s $dir_alias -c $dir_path
 }
-complete -F _my mytmux
+case $SHELL in
+*/zsh)
+   # assume Zsh
+   ;;
+*/bash)
+   # assume Bash
+   complete -F _my mytmux
+   ;;
+*)
+
 
 function mydirs-sk()
 {
