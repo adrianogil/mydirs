@@ -2,7 +2,7 @@
 # export MYDIRS_DIRECTORY=<path-to>/GitRepoWatcher
 # source $MYDIRS_DIRECTORY/src/bashrc.sh
 
-if [ -z "$MYDIRS_PYTHON_PATH" ];
+if [[ -z "$MYDIRS_PYTHON_PATH" ]];
 then
     export MYDIRS_PYTHON_PATH=$MYDIRS_DIRECTORY/python/
     export PYTHONPATH=$MYDIRS_PYTHON_PATH:$PYTHONPATH
