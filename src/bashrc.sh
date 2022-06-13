@@ -34,7 +34,12 @@ function mydirs-rnd()
 
 function mytmux()
 {
-    dir_alias=$1
+    if [ -z "$1" ]; then
+        dir_alias=$(mydirs -l | tr ':' '\t' | sk | tr '\t' ' ' | awk '{print $1}')
+    else
+        dir_alias=$1
+    fi
+
     dir_path=$(mydirs -p $dir_alias)
     tmux new -s $dir_alias -c $dir_path
 }
