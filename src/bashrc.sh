@@ -35,7 +35,7 @@ function mydirs-rnd()
 function mytmux()
 {
     if [ -z "$1" ]; then
-        dir_alias=$(mydirs -l | tr ':' '\t' | sk | tr '\t' ' ' | awk '{print $1}')
+        dir_alias=$(mydirs -l | tr ':' '\t' | default-fuzzy-finder | tr '\t' ' ' | awk '{print $1}')
     else
         dir_alias=$1
     fi
@@ -48,24 +48,24 @@ if [ -x "$BASH" ] && shopt -q >/dev/null 2>&1; then
 fi
 
 
-function mydirs-sk()
+function mydirs-default-fuzzy-finder()
 {
-    mydirs_option=$(mydirs --list-args | tr ' ' '\n' | sk)
+    mydirs_option=$(mydirs --list-args | tr ' ' '\n' | default-fuzzy-finder)
     echo $mydirs_option
 
     if [[ "${mydirs_option}" == "--open" || "${mydirs_option}" == "-o" || "${prev}" == "--remove" || "${prev}" == "-r" ]] ; then
-        mydirs_args=$(mydirs -l | tr ':' ' ' | awk '{print $1}' | sk)
+        mydirs_args=$(mydirs -l | tr ':' ' ' | awk '{print $1}' | default-fuzzy-finder)
 
         mydirs ${mydirs_option} ${mydirs_args}
     else
         mydirs ${mydirs_option}
     fi
 }
-alias m="mydirs-sk"
+alias m="mydirs-default-fuzzy-finder"
 
-function mydirs-open-sk()
+function mydirs-open-default-fuzzy-finder()
 {
-    mydirs_args=$(mydirs -l | tr ':' '\t' | sk | tr '\t' ' ' | awk '{print $1}')
+    mydirs_args=$(mydirs -l | tr ':' '\t' | default-fuzzy-finder | tr '\t' ' ' | awk '{print $1}')
     mydirs -o ${mydirs_args}
 }
-alias mk="mydirs-open-sk"
+alias mk="mydirs-open-default-fuzzy-finder"
