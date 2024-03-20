@@ -41,7 +41,7 @@ function mytmux()
     fi
 
     dir_path=$(mydirs -p $dir_alias)
-    tmux new -s $dir_alias -c $dir_path
+    tnew "$dir_alias" "$dir_path"
 }
 if [ -x "$BASH" ] && shopt -q >/dev/null 2>&1; then
    complete -F _my mytmux
