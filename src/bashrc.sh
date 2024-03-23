@@ -47,6 +47,18 @@ if [ -x "$BASH" ] && shopt -q >/dev/null 2>&1; then
    complete -F _my mytmux
 fi
 
+function mytmux-detached()
+{
+    if [ -z "$1" ]; then
+        dir_alias=$(mydirs -l | tr ':' '\t' | default-fuzzy-finder | tr '\t' ' ' | awk '{print $1}')
+    else
+        dir_alias=$1
+    fi
+
+    dir_path=$(mydirs -p $dir_alias)
+    tmux new-session -d -s "$dir_alias" -c "$dir_path"
+}
+
 
 function mydirs-default-fuzzy-finder()
 {
