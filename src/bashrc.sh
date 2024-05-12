@@ -41,7 +41,14 @@ function mytmux()
     fi
 
     dir_path=$(mydirs -p $dir_alias)
-    tnew "$dir_alias" "$dir_path"
+
+    if tmux has-session -t "$dir_alias" 2>/dev/null; then
+        # echo "Session exists."
+        tenter "$dir_alias"
+    else
+        # echo "Session does not exist."
+        tnew "$dir_alias" "$dir_path"
+    fi
 }
 if [ -x "$BASH" ] && shopt -q >/dev/null 2>&1; then
    complete -F _my mytmux
