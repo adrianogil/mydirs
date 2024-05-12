@@ -53,6 +53,7 @@ function mytmux()
 if [ -x "$BASH" ] && shopt -q >/dev/null 2>&1; then
    complete -F _my mytmux
 fi
+alias m="mytmux"
 
 function mytmux-detached()
 {
@@ -80,7 +81,7 @@ function mydirs-default-fuzzy-finder()
         mydirs ${mydirs_option}
     fi
 }
-alias m="mydirs-default-fuzzy-finder"
+alias myd="mydirs-default-fuzzy-finder"
 
 function mydirs-open-default-fuzzy-finder()
 {
