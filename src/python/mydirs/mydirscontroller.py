@@ -293,6 +293,27 @@ class MyDirsController:
             mydirs_args = mydirs_args + k + " "
         print(mydirs_args)
 
+    def show_help(self, args, extra_args):
+        print("mydirs - bookmark directories and jump quickly\n")
+        print("Usage:")
+        print("  mydirs [options] [args]\n")
+        print("Options:")
+        print("  -s, --save <alias>       Save current directory under alias")
+        print("  -o, --open <alias>       Print saved directory for alias")
+        print("  -r, --remove <alias>     Remove saved alias")
+        print("  -u, --update <alias>     Update saved alias to current directory")
+        print("  -l, --list               List saved directories")
+        print("  -f, --find <search>      Find aliases containing search string")
+        print("  -p, --path <alias>       Print the saved path for alias")
+        print("  -q, --current            Check whether current directory is saved")
+        print("  -bh, --history <number>  Show last N entries from history")
+        print("  -bk, --back              Go back to previous directory")
+        print("  -c, --clean              Remove entries that no longer exist")
+        print("      --stats              Show usage stats")
+        print("      --list-args           List all supported flags")
+        print("      --auto-list           List aliases for autocomplete")
+        print("  -h, --help               Show this help message")
+
     def auto_list(self, args, extra_args):
         # Auto List all saved path for Autocomplete use
         self.c.execute("SELECT * from PathByKey")
@@ -328,6 +349,8 @@ class MyDirsController:
             '--history'    : self.show_history,
             '--list-args'  : self.list_args,
             '--auto-list'  : self.auto_list,
+            '-h'           : self.show_help,
+            '--help'       : self.show_help,
             # 'no-args'      : self.handle_no_args,
         }
         return commands_parse
