@@ -32,6 +32,14 @@ function mydirs-rnd()
     fi
 }
 
+function mydirs-path-pick()
+{
+    target_alias=$(mydirs -l | tr ':' '\t' | default-fuzzy-finder | tr '\t' ' ' | awk '{print $1}')
+    target_path=$(mydirs -p $target_alias)
+    echo $target_path | copy-text-to-clipboard
+    echo $target_path
+}
+
 function mytmux()
 {
     if [ -z "$1" ]; then
