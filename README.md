@@ -62,6 +62,13 @@ export MYDIRS_DB="$HOME/.local/share/mydirs/"
 
 ## Usage
 
+### Show help
+```bash
+mydirs -h
+# or
+mydirs --help
+```
+
 ### Save the current directory
 ```bash
 mydirs -s <alias>
