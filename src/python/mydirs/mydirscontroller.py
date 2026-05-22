@@ -203,6 +203,9 @@ class MyDirsController:
             for s in paths:
                 print("%s: %s" % (s, stats[s]))
 
+    def show_db_path(self, args, extra_args):
+        print(os.path.abspath(self.db_file))
+
     def show_history(self, args, extra_args):
 
         if len(args) == 0:
@@ -310,6 +313,7 @@ class MyDirsController:
         print("  -bk, --back              Go back to previous directory")
         print("  -c, --clean              Remove entries that no longer exist")
         print("      --stats              Show usage stats")
+        print("      --db                 Show database path")
         print("      --list-args           List all supported flags")
         print("      --auto-list           List aliases for autocomplete")
         print("  -h, --help               Show this help message")
@@ -336,6 +340,7 @@ class MyDirsController:
             '-bk'          : self.go_back,
             '-bh'          : self.show_history,
             '--stats'      : self.show_stats,
+            '--db'         : self.show_db_path,
             '--back'       : self.go_back,
             '--clean'      : self.clean,
             '--save'       : self.save,

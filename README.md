@@ -148,6 +148,11 @@ mydirs --clean
 mydirs --stats
 ```
 
+### Show database path
+```bash
+mydirs --db
+```
+
 ## Examples
 ```bash
 # Save current directory as "work"
