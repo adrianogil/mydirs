@@ -1,6 +1,5 @@
 from mydirs.dao.mydirsdao import MyDirsDao
 
-import subprocess
 import sqlite3
 import os
 import os.path
@@ -97,28 +96,25 @@ class MyDirsController:
         self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (path_key,))
         self.conn.commit()
 
+    def read_history_entries(self):
+        if not os.path.isfile(self.history_file):
+            return []
+
+        with open(self.history_file, 'r', encoding='utf-8') as history_handler:
+            return [line.rstrip('\n') for line in history_handler]
+
+    def write_history_entries(self, entries):
+        with open(self.history_file, 'w', encoding='utf-8') as history_handler:
+            for entry in entries:
+                history_handler.write(entry + '\n')
+
     def save_history(self, path_to_save):
-        total_path_cmd = 'cat "' + self.history_file + '" | wc -l'
-        total_path = subprocess.check_output(total_path_cmd, shell=True)
+        history_entries = self.read_history_entries()
+        if history_entries and os.path.realpath(history_entries[-1]) == os.path.realpath(path_to_save):
+            return
 
-        total_path = int(total_path.strip())
-
-        # print(str(total_path))
-
-        if total_path > 0:
-            # Get last path in history file
-            get_last_path_cmd = 'cat "' + self.history_file + '" | tail -1'
-            last_path = subprocess.check_output(get_last_path_cmd, shell=True)
-            last_path = last_path.strip()
-
-            if last_path != path_to_save:
-                # Save path in history file
-                save_path_cmd = 'echo "' + path_to_save + '" >> "' + self.history_file + '"'
-                subprocess.check_output(save_path_cmd, shell=True)
-        else:
-            # Save path in history file
-            save_path_cmd = 'echo "' + path_to_save + '" >> "' + self.history_file + '"'
-            subprocess.check_output(save_path_cmd, shell=True)
+        with open(self.history_file, 'a', encoding='utf-8') as history_handler:
+            history_handler.write(path_to_save + '\n')
 
     def open(self, args, extra_args):
 
@@ -207,57 +203,29 @@ class MyDirsController:
         print(os.path.abspath(self.db_file))
 
     def show_history(self, args, extra_args):
+        path_list = self.read_history_entries()
 
-        if len(args) == 0:
-            get_path_history_cmd = 'cat "' + self.history_file + '"'
-            path_history = subprocess.check_output(get_path_history_cmd, shell=True)
-            path_history = path_history.strip()
+        if len(args) == 1:
+            path_list = path_list[-int(args[0]):]
 
-            path_list = path_history.split('\n')
-
-            for i in reversed(path_list):
-                print(i)
-        elif len(args) == 1:
-            get_path_history_cmd = 'cat "' + self.history_file + '" | tail -' + \
-                str(args[0]) + ''
-            path_history = subprocess.check_output(get_path_history_cmd, shell=True)
-            path_history = path_history.strip()
-
-            path_list = path_history.split('\n')
-
-            for i in reversed(path_list):
-                print(i)
+        for i in reversed(path_list):
+            print(i)
 
     def go_back(self, args, extra_args):
+        while True:
+            history_entries = self.read_history_entries()
+            if not history_entries:
+                return
 
-        total_path_cmd = 'cat "' + self.history_file + '" | wc -l'
-        total_path = subprocess.check_output(total_path_cmd, shell=True)
-
-        total_path = int(total_path.strip())
-
-        # print(str(total_path))
-
-        # Get last path in history file
-        get_last_path_cmd = 'cat "' + self.history_file + '" | tail -1'
-        last_path = subprocess.check_output(get_last_path_cmd, shell=True)
-        last_path = last_path.strip()
-
-        # print(last_path)
-
-        if total_path > 0:
-            update_path_cmd = 'cat "' + self.history_file + '" | head -' + str(total_path-1) + \
-                ' > tmp.history'
-            subprocess.check_output(update_path_cmd, shell=True)
-
-            update_path_cmd = 'cat tmp.history > "' + self.history_file + '" && rm tmp.history'
-            subprocess.check_output(update_path_cmd, shell=True)
-
+            last_path = history_entries.pop()
+            self.write_history_entries(history_entries)
             current_dir = os.getcwd()
 
-            if current_dir.strip() == last_path:
-                self.go_back(args, extra_args)
+            if os.path.realpath(current_dir.strip()) == os.path.realpath(last_path):
+                continue
             else:
                 print(last_path)
+                return
 
     def current(self, args, extra_args):
 
