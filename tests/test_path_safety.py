@@ -2,6 +2,7 @@ import contextlib
 import io
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -39,6 +40,41 @@ class MyDirsPathSafetyTest(unittest.TestCase):
             os.environ['MYDIRS_DB'] = self.previous_mydirs_db
 
         self.tmpdir.cleanup()
+
+    def shell_environment(self):
+        environment = os.environ.copy()
+        python_path = str(PROJECT_ROOT / 'src' / 'python')
+        if environment.get('PYTHONPATH'):
+            python_path += os.pathsep + environment['PYTHONPATH']
+        environment['PYTHONPATH'] = python_path
+        return environment
+
+    def run_wrapper(self, arguments, cwd):
+        return subprocess.run(
+            [
+                'bash',
+                '--noprofile',
+                '--norc',
+                '-c',
+                'source "$1" "${@:2}"; printf "__PWD__%s\\n" "$PWD"',
+                'bash',
+                str(PROJECT_ROOT / 'src' / 'mydirs.sh'),
+                *arguments,
+            ],
+            cwd=cwd,
+            env=self.shell_environment(),
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+    def assert_wrapper_pwd(self, result, expected_path):
+        pwd_lines = [
+            line.removeprefix('__PWD__')
+            for line in result.stdout.splitlines()
+            if line.startswith('__PWD__')
+        ]
+        self.assertEqual(pwd_lines, [expected_path])
 
     def test_save_list_and_open_preserve_path_with_spaces_and_unicode(self):
         saved_path = os.path.join(
@@ -89,11 +125,60 @@ class MyDirsPathSafetyTest(unittest.TestCase):
         self.controller.save(['shell-safe'], {})
         os.chdir(starting_path)
 
-        environment = os.environ.copy()
-        python_path = str(PROJECT_ROOT / 'src' / 'python')
-        if environment.get('PYTHONPATH'):
-            python_path += os.pathsep + environment['PYTHONPATH']
-        environment['PYTHONPATH'] = python_path
+        result = self.run_wrapper(['--open', 'shell-safe'], starting_path)
+
+        self.assert_wrapper_pwd(result, saved_cwd)
+        self.assertFalse(os.path.exists(unexpected_file))
+
+    def test_shell_wrapper_opens_alias_with_spaces_and_unicode(self):
+        saved_path = os.path.join(self.tmpdir.name, 'destino salvo')
+        starting_path = os.path.join(self.tmpdir.name, 'origem')
+        path_alias = 'meus projetos_日本語'
+        os.makedirs(saved_path)
+        os.makedirs(starting_path)
+
+        os.chdir(saved_path)
+        saved_cwd = os.getcwd()
+        self.controller.save([path_alias], {})
+        os.chdir(starting_path)
+
+        result = self.run_wrapper(['--open', path_alias], starting_path)
+
+        self.assert_wrapper_pwd(result, saved_cwd)
+
+    def test_shell_wrapper_goes_back_to_space_and_unicode_path(self):
+        previous_path = os.path.join(
+            self.tmpdir.name,
+            'anterior com espaços; $(touch invadido) — 東京',
+        )
+        current_path = os.path.join(self.tmpdir.name, 'diretório atual')
+        unexpected_file = os.path.join(current_path, 'invadido')
+        os.makedirs(previous_path)
+        os.makedirs(current_path)
+
+        os.chdir(previous_path)
+        previous_cwd = os.getcwd()
+        os.chdir(current_path)
+        current_cwd = os.getcwd()
+        self.controller.write_history_entries([previous_cwd, current_cwd])
+
+        result = self.run_wrapper(['--back'], current_path)
+
+        self.assert_wrapper_pwd(result, previous_cwd)
+        self.assertEqual(self.controller.read_history_entries(), [])
+        self.assertFalse(os.path.exists(unexpected_file))
+
+    def test_bashrc_loads_from_space_and_unicode_install_path(self):
+        install_directory = os.path.join(
+            self.tmpdir.name,
+            'instalação do mydirs_日本語',
+        )
+        shutil.copytree(PROJECT_ROOT / 'src', install_directory)
+
+        environment = self.shell_environment()
+        environment['MYDIRS_DIRECTORY'] = install_directory
+        environment.pop('MYDIRS_PYTHON_PATH', None)
+        environment.pop('PYTHONPATH', None)
 
         result = subprocess.run(
             [
@@ -101,25 +186,18 @@ class MyDirsPathSafetyTest(unittest.TestCase):
                 '--noprofile',
                 '--norc',
                 '-c',
-                'source "$1" --open "$2"; printf "__PWD__%s\\n" "$PWD"',
+                'set -e; shopt -s expand_aliases; '
+                'source "$1/bashrc.sh"; eval "mydirs --help"',
                 'bash',
-                str(PROJECT_ROOT / 'src' / 'mydirs.sh'),
-                'shell-safe',
+                install_directory,
             ],
-            cwd=starting_path,
             env=environment,
             check=True,
             capture_output=True,
             text=True,
         )
 
-        pwd_lines = [
-            line.removeprefix('__PWD__')
-            for line in result.stdout.splitlines()
-            if line.startswith('__PWD__')
-        ]
-        self.assertEqual(pwd_lines, [saved_cwd])
-        self.assertFalse(os.path.exists(unexpected_file))
+        self.assertIn('mydirs - bookmark directories', result.stdout)
 
 
 if __name__ == '__main__':

@@ -4,13 +4,13 @@
 
 if [[ -z "$MYDIRS_PYTHON_PATH" ]];
 then
-    export MYDIRS_PYTHON_PATH=$MYDIRS_DIRECTORY/python/
-    export PYTHONPATH=$MYDIRS_PYTHON_PATH:$PYTHONPATH
+    export MYDIRS_PYTHON_PATH="$MYDIRS_DIRECTORY/python/"
+    export PYTHONPATH="$MYDIRS_PYTHON_PATH${PYTHONPATH:+:$PYTHONPATH}"
 fi
 
-alias mydirs=". "$MYDIRS_DIRECTORY"/mydirs.sh"
+alias mydirs='. "$MYDIRS_DIRECTORY/mydirs.sh"'
 if [ -x "$BASH" ] && shopt -q >/dev/null 2>&1; then
-   source $MYDIRS_DIRECTORY"/autocompletion_mydirs.sh"
+   source "$MYDIRS_DIRECTORY/autocompletion_mydirs.sh"
 fi
 
 
