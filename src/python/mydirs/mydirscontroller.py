@@ -63,7 +63,7 @@ class MyDirsController:
             # dict_path = {":path" : os.getcwd(), ":key": sys.argv[2]}
             #print dict_path
             save_sql = "INSERT INTO PathByKey (path,path_key) VALUES (:path,:key)"
-            save_data = (current_dir, path_key)
+            save_data = {'path': current_dir, 'key': path_key}
             self.c.execute(save_sql, save_data)
             self.conn.commit()
         else:
