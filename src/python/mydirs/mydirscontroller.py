@@ -22,16 +22,19 @@ class MyDirsController:
         if 'MYDIRS_DB' in os.environ:
             self.db_directory = os.environ['MYDIRS_DB']
         else:
-            self.db_directory = self.src_path + '/../db/'
+            self.db_directory = os.path.join(self.src_path, '..', 'db')
 
         if not os.path.exists(self.db_directory):
             os.makedirs(self.db_directory)
 
         # print("Loading db " + self.db_directory)
-        self.db_file = self.db_directory + 'mydirs.sqlite'
-        self.json_stats_filepath = self.db_directory + 'mydirs_stats.json'
+        self.db_file = os.path.join(self.db_directory, 'mydirs.sqlite')
+        self.json_stats_filepath = os.path.join(
+            self.db_directory,
+            'mydirs_stats.json',
+        )
 
-        self.history_file = self.db_directory + 'mydirs.history'
+        self.history_file = os.path.join(self.db_directory, 'mydirs.history')
 
         self.conn = sqlite3.connect(self.db_file);
         # Creating cursor

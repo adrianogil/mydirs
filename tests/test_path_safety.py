@@ -22,7 +22,7 @@ class MyDirsPathSafetyTest(unittest.TestCase):
 
         self.db_directory = os.path.join(self.tmpdir.name, 'database')
         os.environ['MYDIRS_DIRECTORY'] = self.tmpdir.name
-        os.environ['MYDIRS_DB'] = self.db_directory + os.sep
+        os.environ['MYDIRS_DB'] = self.db_directory
         self.controller = MyDirsController()
 
     def tearDown(self):
@@ -75,6 +75,20 @@ class MyDirsPathSafetyTest(unittest.TestCase):
             if line.startswith('__PWD__')
         ]
         self.assertEqual(pwd_lines, [expected_path])
+
+    def test_data_files_are_joined_to_db_directory(self):
+        self.assertEqual(
+            self.controller.db_file,
+            os.path.join(self.db_directory, 'mydirs.sqlite'),
+        )
+        self.assertEqual(
+            self.controller.history_file,
+            os.path.join(self.db_directory, 'mydirs.history'),
+        )
+        self.assertEqual(
+            self.controller.json_stats_filepath,
+            os.path.join(self.db_directory, 'mydirs_stats.json'),
+        )
 
     def test_save_list_and_open_preserve_path_with_spaces_and_unicode(self):
         saved_path = os.path.join(
