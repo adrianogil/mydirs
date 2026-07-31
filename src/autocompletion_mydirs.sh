@@ -4,7 +4,7 @@ _mydirs()
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="--save -s --open -o --remove -r --list -l --path -p --db"
+    opts="--save -s --open -o --remove -r --list -l --path -p --db --export-history --import-history"
     _script_folders=$(python3 -m mydirs --auto-list)
 
 	if [[ "${prev}" == "--open" || "${prev}" == "-o" || "${prev}" == "--remove" || "${prev}" == "-r" || "${prev}" == "--path" || "${prev}" == "-p"  ]] ; then

@@ -7,6 +7,10 @@ import os.path
 import json
 
 
+HISTORY_BACKUP_FORMAT = 'mydirs-history'
+HISTORY_BACKUP_VERSION = 1
+
+
 class MyDirsController:
     def __init__(self):
 
@@ -115,6 +119,76 @@ class MyDirsController:
 
         with open(self.history_file, 'a', encoding='utf-8') as history_handler:
             history_handler.write(path_to_save + '\n')
+
+    def history_backup_filepath(self, args, command):
+        if len(args) != 1:
+            raise ValueError("%s requires one JSON file path" % command)
+
+        return os.path.abspath(os.path.expanduser(args[0]))
+
+    def export_history(self, args, extra_args):
+        backup_filepath = self.history_backup_filepath(args, '--export-history')
+        backup = {
+            'format': HISTORY_BACKUP_FORMAT,
+            'version': HISTORY_BACKUP_VERSION,
+            'entries': self.read_history_entries(),
+        }
+        self.validate_history_backup(backup)
+
+        with open(backup_filepath, 'w', encoding='utf-8') as backup_handler:
+            json.dump(backup, backup_handler, ensure_ascii=False, indent=2)
+            backup_handler.write('\n')
+
+        print("Exported %d history entries to %s" % (
+            len(backup['entries']),
+            backup_filepath,
+        ))
+
+    def validate_history_backup(self, backup):
+        if not isinstance(backup, dict):
+            raise ValueError('history backup must be a JSON object')
+        if backup.get('format') != HISTORY_BACKUP_FORMAT:
+            raise ValueError("history backup format must be '%s'" % HISTORY_BACKUP_FORMAT)
+        if type(backup.get('version')) is not int:
+            raise ValueError('history backup version must be an integer')
+        if backup['version'] != HISTORY_BACKUP_VERSION:
+            raise ValueError("unsupported history backup version: %s" % backup['version'])
+
+        entries = backup.get('entries')
+        if not isinstance(entries, list):
+            raise ValueError('history backup entries must be a JSON array')
+
+        for entry in entries:
+            if not isinstance(entry, str):
+                raise ValueError('history backup entries must contain only strings')
+            if not entry or '\n' in entry or '\r' in entry or '\0' in entry:
+                raise ValueError('history backup contains an invalid path entry')
+
+        return entries
+
+    def import_history(self, args, extra_args):
+        backup_filepath = self.history_backup_filepath(args, '--import-history')
+
+        try:
+            with open(backup_filepath, 'r', encoding='utf-8') as backup_handler:
+                backup = json.load(backup_handler)
+        except json.JSONDecodeError as error:
+            raise ValueError("invalid history backup JSON: %s" % error.msg)
+
+        entries = self.validate_history_backup(backup)
+        imported_entries = []
+        for entry in entries:
+            if imported_entries and (
+                os.path.realpath(imported_entries[-1]) == os.path.realpath(entry)
+            ):
+                continue
+            imported_entries.append(entry)
+
+        self.write_history_entries(imported_entries)
+        print("Imported %d history entries from %s" % (
+            len(imported_entries),
+            backup_filepath,
+        ))
 
     def open(self, args, extra_args):
 
@@ -279,6 +353,8 @@ class MyDirsController:
         print("  -q, --current            Check whether current directory is saved")
         print("  -bh, --history <number>  Show last N entries from history")
         print("  -bk, --back              Go back to previous directory")
+        print("      --export-history <file>  Export history to a JSON backup")
+        print("      --import-history <file>  Replace history from a JSON backup")
         print("  -c, --clean              Remove entries that no longer exist")
         print("      --stats              Show usage stats")
         print("      --db                 Show database path")
@@ -320,6 +396,8 @@ class MyDirsController:
             '--update'     : self.update,
             '--current'    : self.current,
             '--history'    : self.show_history,
+            '--export-history': self.export_history,
+            '--import-history': self.import_history,
             '--list-args'  : self.list_args,
             '--auto-list'  : self.auto_list,
             '-h'           : self.show_help,

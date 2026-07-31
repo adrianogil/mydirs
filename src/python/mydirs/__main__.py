@@ -43,7 +43,11 @@ def parse_commands(args):
         if a in commands_parse:
             commands_parse[a](args[a], args)
 
-args = parse_arguments()
-parse_commands(args)
-
-controller.finish()
+try:
+    args = parse_arguments()
+    parse_commands(args)
+except (OSError, ValueError) as error:
+    print("mydirs: %s" % error, file=sys.stderr)
+    sys.exit(1)
+finally:
+    controller.finish()

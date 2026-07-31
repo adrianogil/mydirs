@@ -136,6 +136,23 @@ mydirs --history <number>
 mydirs --back
 ```
 
+### Export and import history backups
+Export the directory history to a portable, versioned JSON file:
+
+```bash
+mydirs --export-history mydirs-history.json
+```
+
+Restore the history from a backup:
+
+```bash
+mydirs --import-history mydirs-history.json
+```
+
+Import validates the complete backup before replacing the current history. It
+rejects malformed or unsupported JSON without changing the existing history,
+and collapses consecutive duplicate paths just like normal history tracking.
+
 ### Clean entries that no longer exist
 ```bash
 mydirs -c

@@ -1,10 +1,15 @@
 import contextlib
 import io
+import json
 import os
 import tempfile
 import unittest
 
-from mydirs.mydirscontroller import MyDirsController
+from mydirs.mydirscontroller import (
+    HISTORY_BACKUP_FORMAT,
+    HISTORY_BACKUP_VERSION,
+    MyDirsController,
+)
 
 
 class MyDirsHistoryTest(unittest.TestCase):
@@ -73,6 +78,98 @@ class MyDirsHistoryTest(unittest.TestCase):
 
         self.assertEqual(output.getvalue().strip(), previous_path)
         self.assertEqual(self.controller.read_history_entries(), [])
+
+    def test_export_history_writes_versioned_json_shape(self):
+        entries = [
+            os.path.join(self.tmpdir.name, 'first path'),
+            os.path.join(self.tmpdir.name, 'café'),
+        ]
+        backup_path = os.path.join(self.tmpdir.name, 'history backup.json')
+        self.controller.write_history_entries(entries)
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.controller.export_history([backup_path], {})
+
+        with open(backup_path, 'r', encoding='utf-8') as backup_handler:
+            backup = json.load(backup_handler)
+
+        self.assertEqual(backup, {
+            'format': HISTORY_BACKUP_FORMAT,
+            'version': HISTORY_BACKUP_VERSION,
+            'entries': entries,
+        })
+
+    def test_import_history_round_trip_restores_entries(self):
+        entries = [
+            os.path.join(self.tmpdir.name, 'first'),
+            os.path.join(self.tmpdir.name, 'second'),
+            os.path.join(self.tmpdir.name, 'first'),
+        ]
+        backup_path = os.path.join(self.tmpdir.name, 'history.json')
+        self.controller.write_history_entries(entries)
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.controller.export_history([backup_path], {})
+
+        self.controller.write_history_entries([
+            os.path.join(self.tmpdir.name, 'new local entry'),
+        ])
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.controller.import_history([backup_path], {})
+
+        self.assertEqual(self.controller.read_history_entries(), entries)
+
+    def test_import_history_rejects_malformed_json_without_changing_history(self):
+        original_entries = [os.path.join(self.tmpdir.name, 'existing')]
+        backup_path = os.path.join(self.tmpdir.name, 'malformed.json')
+        self.controller.write_history_entries(original_entries)
+        with open(backup_path, 'w', encoding='utf-8') as backup_handler:
+            backup_handler.write('{"format": "mydirs-history",')
+
+        with self.assertRaisesRegex(ValueError, 'invalid history backup JSON'):
+            self.controller.import_history([backup_path], {})
+
+        self.assertEqual(
+            self.controller.read_history_entries(),
+            original_entries,
+        )
+
+    def test_import_history_rejects_invalid_entries_without_changing_history(self):
+        original_entries = [os.path.join(self.tmpdir.name, 'existing')]
+        backup_path = os.path.join(self.tmpdir.name, 'invalid-entry.json')
+        self.controller.write_history_entries(original_entries)
+        with open(backup_path, 'w', encoding='utf-8') as backup_handler:
+            json.dump({
+                'format': HISTORY_BACKUP_FORMAT,
+                'version': HISTORY_BACKUP_VERSION,
+                'entries': [os.path.join(self.tmpdir.name, 'valid'), 42],
+            }, backup_handler)
+
+        with self.assertRaisesRegex(ValueError, 'only strings'):
+            self.controller.import_history([backup_path], {})
+
+        self.assertEqual(
+            self.controller.read_history_entries(),
+            original_entries,
+        )
+
+    def test_import_history_collapses_only_consecutive_duplicates(self):
+        first_path = os.path.join(self.tmpdir.name, 'first')
+        second_path = os.path.join(self.tmpdir.name, 'second')
+        backup_path = os.path.join(self.tmpdir.name, 'duplicates.json')
+        with open(backup_path, 'w', encoding='utf-8') as backup_handler:
+            json.dump({
+                'format': HISTORY_BACKUP_FORMAT,
+                'version': HISTORY_BACKUP_VERSION,
+                'entries': [first_path, first_path, second_path, first_path],
+            }, backup_handler)
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.controller.import_history([backup_path], {})
+
+        self.assertEqual(
+            self.controller.read_history_entries(),
+            [first_path, second_path, first_path],
+        )
 
 
 if __name__ == '__main__':

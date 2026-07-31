@@ -4,5 +4,5 @@ if [[ $1 == "-o" ]] || [[ $1 == "--open" ]] || [[ $1 == "--back" ]] ||  [[ $1 ==
     echo "Let's go to directory "$cd_directory
     cd "$cd_directory"
 else
-    python3 -m mydirs $1 $2
+    python3 -m mydirs "$@"
 fi
