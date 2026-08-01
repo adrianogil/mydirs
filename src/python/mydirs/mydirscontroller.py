@@ -44,10 +44,15 @@ class MyDirsController:
             CREATE TABLE IF NOT EXISTS PathByKey (
                 id_pathbykey INTEGER,
                 path TEXT,
-                path_key TEXT,
+                path_key TEXT NOT NULL COLLATE BINARY,
                 PRIMARY KEY (id_pathbykey)
             )
         ''')
+        self.c.execute('''
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_pathbykey_path_key
+            ON PathByKey(path_key COLLATE BINARY)
+        ''')
+        self.conn.commit()
 
     def handle_no_args(self):
         print("Default mode: Update and Move HEAD to upstream\n")
@@ -62,7 +67,10 @@ class MyDirsController:
         else:
             path_key = args[0]
 
-        self.c.execute("SELECT path FROM PathByKey WHERE path_key LIKE ?", (path_key,))
+        self.c.execute(
+            "SELECT path FROM PathByKey WHERE path_key = ? COLLATE BINARY",
+            (path_key,),
+        )
         row = self.c.fetchone()
         if row is None:
             # Save current path
@@ -84,7 +92,10 @@ class MyDirsController:
 
         # Remove a saved path
         print('Updating', path_key, 'to current path')
-        self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (path_key,))
+        self.c.execute(
+            "DELETE FROM PathByKey WHERE path_key = ? COLLATE BINARY",
+            (path_key,),
+        )
         self.conn.commit()
 
         self.c.execute("INSERT INTO PathByKey (path,path_key) VALUES (:path,:key)", (current_dir, path_key))
@@ -100,7 +111,10 @@ class MyDirsController:
             path_key = args[0]
 
         print('deleting', path_key)
-        self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (path_key,))
+        self.c.execute(
+            "DELETE FROM PathByKey WHERE path_key = ? COLLATE BINARY",
+            (path_key,),
+        )
         self.conn.commit()
 
     def read_history_entries(self):
@@ -198,7 +212,10 @@ class MyDirsController:
         path_key = args[0]
 
         # Open saved path
-        self.c.execute("SELECT path FROM PathByKey WHERE path_key LIKE ?", (path_key,))
+        self.c.execute(
+            "SELECT path FROM PathByKey WHERE path_key = ? COLLATE BINARY",
+            (path_key,),
+        )
         row = self.c.fetchone()
         if row is None:
             print('.')
@@ -221,7 +238,10 @@ class MyDirsController:
         path_key = args[0]
 
         # Return saved path
-        self.c.execute("SELECT path FROM PathByKey WHERE path_key LIKE ?", (path_key,))
+        self.c.execute(
+            "SELECT path FROM PathByKey WHERE path_key = ? COLLATE BINARY",
+            (path_key,),
+        )
         row = self.c.fetchone()
         if row is None:
             print('.')
@@ -245,7 +265,10 @@ class MyDirsController:
             # print file_path
             if not os.path.exists(file_path):
                 print("Removing " + str(row[2]) + ":" + str(row[1]))
-                self.c.execute("DELETE FROM PathByKey WHERE path_key = ?", (row[2],))
+                self.c.execute(
+                    "DELETE FROM PathByKey WHERE path_key = ? COLLATE BINARY",
+                    (row[2],),
+                )
                 self.conn.commit()
 
     def save_stats(self, path):

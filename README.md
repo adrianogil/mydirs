@@ -60,6 +60,9 @@ Example:
 export MYDIRS_DB="$HOME/.local/share/mydirs/"
 ```
 
+Aliases are case-sensitive. Exact alias commands treat characters such as `%`
+and `_` literally rather than as database wildcard characters.
+
 ## Usage
 
 ### Show help

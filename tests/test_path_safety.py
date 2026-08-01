@@ -3,6 +3,7 @@ import io
 import os
 from pathlib import Path
 import shutil
+import sqlite3
 import subprocess
 import tempfile
 import unittest
@@ -89,6 +90,96 @@ class MyDirsPathSafetyTest(unittest.TestCase):
             self.controller.json_stats_filepath,
             os.path.join(self.db_directory, 'mydirs_stats.json'),
         )
+
+    def test_alias_wildcards_are_matched_literally(self):
+        aliases_and_paths = [
+            ('project-one', 'ordinary percent match'),
+            ('project%', 'literal percent alias'),
+            ('fileXname', 'ordinary underscore match'),
+            ('file_name', 'literal underscore alias'),
+        ]
+        expected_paths = {}
+
+        for path_alias, directory_name in aliases_and_paths:
+            directory = os.path.join(self.tmpdir.name, directory_name)
+            os.makedirs(directory)
+            os.chdir(directory)
+            expected_paths[path_alias] = os.getcwd()
+            self.controller.save([path_alias], {})
+
+        self.controller.c.execute(
+            'SELECT path_key, path FROM PathByKey ORDER BY path_key',
+        )
+        self.assertEqual(dict(self.controller.c.fetchall()), expected_paths)
+
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.controller.path(['project%'], {})
+        self.assertEqual(output.getvalue().strip(), expected_paths['project%'])
+
+    def test_alias_identity_is_case_sensitive(self):
+        aliases_and_directories = (
+            ('Work', 'uppercase alias path'),
+            ('work', 'lowercase alias path'),
+        )
+        for path_alias, directory_name in aliases_and_directories:
+            directory = os.path.join(self.tmpdir.name, directory_name)
+            os.makedirs(directory)
+            os.chdir(directory)
+            self.controller.save([path_alias], {})
+
+        self.controller.c.execute(
+            'SELECT path_key FROM PathByKey ORDER BY path_key COLLATE BINARY',
+        )
+        self.assertEqual(
+            [row[0] for row in self.controller.c.fetchall()],
+            ['Work', 'work'],
+        )
+
+    def test_database_rejects_duplicate_aliases(self):
+        os.chdir(self.tmpdir.name)
+        self.controller.save(['unique-alias'], {})
+
+        try:
+            with self.assertRaises(sqlite3.IntegrityError):
+                self.controller.c.execute(
+                    'INSERT INTO PathByKey (path, path_key) VALUES (?, ?)',
+                    ('/another/path', 'unique-alias'),
+                )
+        finally:
+            self.controller.conn.rollback()
+
+    def test_existing_database_receives_unique_alias_index(self):
+        legacy_directory = os.path.join(self.tmpdir.name, 'legacy database')
+        legacy_db_file = os.path.join(legacy_directory, 'mydirs.sqlite')
+        os.makedirs(legacy_directory)
+        with sqlite3.connect(legacy_db_file) as connection:
+            connection.execute('''
+                CREATE TABLE PathByKey (
+                    id_pathbykey INTEGER PRIMARY KEY,
+                    path TEXT,
+                    path_key TEXT
+                )
+            ''')
+            connection.execute(
+                'INSERT INTO PathByKey (path, path_key) VALUES (?, ?)',
+                ('/original/path', 'legacy-alias'),
+            )
+
+        original_db_directory = os.environ['MYDIRS_DB']
+        os.environ['MYDIRS_DB'] = legacy_directory
+        legacy_controller = MyDirsController()
+        try:
+            with self.assertRaises(sqlite3.IntegrityError):
+                legacy_controller.c.execute(
+                    'INSERT INTO PathByKey (path, path_key) VALUES (?, ?)',
+                    ('/duplicate/path', 'legacy-alias'),
+                )
+        finally:
+            legacy_controller.conn.rollback()
+            legacy_controller.finish()
+            legacy_controller.conn.close()
+            os.environ['MYDIRS_DB'] = original_db_directory
 
     def test_save_list_and_open_preserve_path_with_spaces_and_unicode(self):
         saved_path = os.path.join(
