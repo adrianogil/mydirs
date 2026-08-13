@@ -3,6 +3,7 @@ import io
 import json
 import os
 import tempfile
+import threading
 import unittest
 
 from mydirs.mydirscontroller import (
@@ -49,6 +50,41 @@ class MyDirsHistoryTest(unittest.TestCase):
         self.controller.save_history(path)
 
         self.assertEqual(self.controller.read_history_entries(), [path])
+
+    def test_concurrent_navigation_history_keeps_source_target_pairs(self):
+        controllers = [self.controller]
+        controllers.extend(MyDirsController() for _ in range(3))
+        errors = []
+
+        def record(controller, index):
+            try:
+                controller.save_navigation(
+                    os.path.join(self.tmpdir.name, 'source %d' % index),
+                    os.path.join(self.tmpdir.name, 'target %d' % index),
+                )
+            except BaseException as error:
+                errors.append(error)
+
+        threads = [
+            threading.Thread(target=record, args=(controller, index))
+            for index, controller in enumerate(controllers)
+        ]
+        try:
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join()
+        finally:
+            for controller in controllers[1:]:
+                controller.finish()
+
+        entries = self.controller.read_history_entries()
+        self.assertEqual(errors, [])
+        self.assertEqual(len(entries), 8)
+        for index in range(4):
+            source = os.path.join(self.tmpdir.name, 'source %d' % index)
+            target = os.path.join(self.tmpdir.name, 'target %d' % index)
+            self.assertEqual(entries[entries.index(source) + 1], target)
 
     def test_show_history_prints_newest_entries_first(self):
         first_path = os.path.join(self.tmpdir.name, 'first')

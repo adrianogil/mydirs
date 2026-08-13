@@ -204,6 +204,9 @@ class MyDirsPathSafetyTest(unittest.TestCase):
         open_output = io.StringIO()
         with contextlib.redirect_stdout(open_output):
             self.controller.open(['unicode-path'], {})
+        self.controller.record_open(
+            ['unicode-path', starting_cwd, saved_cwd], {}
+        )
 
         self.assertEqual(
             list_output.getvalue().splitlines(),

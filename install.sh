@@ -1,26 +1,22 @@
-echo '================================'
-echo 'Installing mydirs'
-echo ''
+#!/usr/bin/env bash
+set -e
 
-# Variables
-profile_file=~/.profile
-mydirs_directory=$(PWD)
-mydirs_script=$mydirs_directory/src/mydirs.sh
-mydirs_autocomplete_script=$mydirs_directory/src/autocompletion_mydirs.sh
+project_directory=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+mydirs_directory="$project_directory/src"
+profile_file="${MYDIRS_PROFILE:-$HOME/.profile}"
+marker='# MyDirs managed setup'
 
-echo ' ' >>  $profile_file
-echo '# MyDirs ' >> $profile_file
+touch "$profile_file"
+if grep -F "$marker" "$profile_file" >/dev/null 2>&1; then
+    printf 'MyDirs is already configured in %s\n' "$profile_file"
+    exit 0
+fi
 
-echo 'Creating alias at '$profile_file
-echo 'export MYDIRS_DIRECTORY="'$mydirs_directory'"'
-echo 'alias mydirs=". '$mydirs_script'"' >> $profile_file
+{
+    printf '\n%s\n' "$marker"
+    printf 'export MYDIRS_DIRECTORY=%q\n' "$mydirs_directory"
+    printf 'source "$MYDIRS_DIRECTORY/bashrc.sh"\n'
+} >> "$profile_file"
 
-echo 'Adding autocomplete feature'
-echo 'source "'$mydirs_autocomplete_script'"' >> $profile_file
-echo ''
-echo 'Update '$profile_file
-source $profile_file
-
-echo ' '
-echo 'Installation completed!'
-echo '================================'
+printf 'MyDirs configuration added to %s\n' "$profile_file"
+printf 'Reload your shell profile or start a new shell to use mydirs.\n'
